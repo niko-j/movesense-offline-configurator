@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Set widget states
     ui->stopScanButton->hide();
     ui->disconnectButton->hide();
+    ui->connectButton->setEnabled(false);
 
     ui->resetButton->setEnabled(false);
     ui->applyButton->setEnabled(false);

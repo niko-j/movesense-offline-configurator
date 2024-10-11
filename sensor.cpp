@@ -62,7 +62,7 @@ uint8_t Sensor::sendCommand(SensorCommands cmd)
     uint8_t cmdRef = _requestRef;
 
     _requestRef++;
-    if(_requestRef == SENSOR_DATA_INVALID_REF)
+    if(_requestRef == SENSOR_INVALID_REF)
         _requestRef++;
 
     QByteArray data = QByteArray();
@@ -143,14 +143,14 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
 {
     qInfo("Characteristic changed: %s", c.uuid().toString().toStdString().c_str());
 
-    SensorDataHeader header;
+    SensorPacketHeader header;
     if(!header.read_from_packet(value))
     {
         qInfo("Failed to read packet header");
         return;
     }
 
-    qInfo("RECV packet (ref %u) (%lld bytes)", header.ref, value.size());
+    qInfo("RECV packet (ref %u) (%lld bytes)", header.requestReference, value.size());
 
     if(c.uuid() == configCharUuid)
     {
@@ -168,35 +168,40 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
         static std::mutex bufferMutex;
         std::lock_guard lock(bufferMutex);
 
-        if(!_buffers.contains(header.ref))
+        SensorPacketData dataInfo;
+        if(!dataInfo.read_from_packet(value))
         {
-            _buffers[header.ref] = DataTransmission {
+            emit onError(Error::DataReadFailure);
+            return;
+        }
+
+        if(!_buffers.contains(header.requestReference))
+        {
+            _buffers[header.requestReference] = DataTransmission {
                 .received_bytes = 0,
-                .bytes = QByteArray(header.total_len, 0)
+                .bytes = QByteArray(dataInfo.totalBytes, 0)
             };
         }
 
-        auto& buf = _buffers[header.ref];
+        auto& buf = _buffers[header.requestReference];
+        size_t payloadSize = value.size() - SENSOR_PACKET_DATA_OFFSET;
 
-        SensorDataBytes data;
-        data.read_from_packet(value);
-
-        if(header.offset + data.bytes.size() > buf.bytes.size()) {
+        if(dataInfo.offset + payloadSize > buf.bytes.size()) {
             qWarning("Corrupted data packet");
             return;
         }
 
-        memcpy(buf.bytes.data() + header.offset, data.bytes.data(), data.bytes.length());
-        buf.received_bytes += data.bytes.size();
+        memcpy(buf.bytes.data() + dataInfo.offset, value.data() + SENSOR_PACKET_DATA_OFFSET, payloadSize);
+        buf.received_bytes += payloadSize;
 
-        if(buf.received_bytes == header.total_len)
+        if(buf.received_bytes == dataInfo.totalBytes)
         {
-            emit onDataTransmissionCompleted(header.ref, data.bytes);
-            _buffers.remove(header.ref);
+            emit onDataTransmissionCompleted(header.requestReference, buf.bytes);
+            _buffers.remove(header.requestReference);
         }
         else
         {
-            emit onDataTransmissionProgressUpdate(header.ref, buf.received_bytes, header.total_len);
+            emit onDataTransmissionProgressUpdate(header.requestReference, buf.received_bytes, dataInfo.totalBytes);
         }
     }
 }

@@ -12,8 +12,19 @@
 #define SENSOR_SAMPLERATES_IMU { SENSOR_OFF, 13, 26, 52, 104, 208, 416, 833, 1666 }
 #define SENSOR_SAMPLERATES_ONOFF { SENSOR_OFF, SENSOR_ON }
 
-#define SENSOR_DATA_PAYLOAD_SIZE 128
-#define SENSOR_DATA_INVALID_REF 0
+#define SENSOR_PAYLOAD_SIZE 120
+#define SENSOR_INVALID_REF 0
+
+struct SensorDataSection
+{
+    virtual void write_to(QByteArray& data) const = 0;
+    virtual bool read_from_packet(const QByteArray& packet) = 0;
+};
+
+#define SENSOR_DATA_SECTION_LENGTH(len) \
+static constexpr size_t BYTE_SIZE = len; \
+    void write_to(QByteArray& data) const; \
+    bool read_from_packet(const QByteArray& packet);
 
 enum SensorCommands : uint8_t
 {
@@ -22,6 +33,14 @@ enum SensorCommands : uint8_t
     SensorCmdGetSessions = 0x03,
     SensorCmdGetSessionLog = 0x04,
     SensorCmdClearSessionLogs = 0x05
+};
+
+enum SensorPacketType : uint8_t
+{
+    SensorPacketTypeUnknown = 0,
+    SensorPacketTypeData,
+    SensorPacketTypeStatus,
+    SensorPacketTypeCount,
 };
 
 enum SensorMeasurements
@@ -61,48 +80,34 @@ union SensorSampleRates
     uint16_t data[SensorMeasCount];
 };
 
-struct SensorDataPart
+struct SensorPacketHeader : SensorDataSection
 {
-    virtual void write_to(QByteArray& data) const = 0;
-    virtual bool read_from_packet(const QByteArray& packet) = 0;
+    SENSOR_DATA_SECTION_LENGTH(2);
+    SensorPacketType type = SensorPacketTypeUnknown;
+    uint8_t requestReference = SENSOR_INVALID_REF;
 };
 
-#define SENSOR_DATA_PART(len) \
-    static constexpr size_t BYTE_SIZE = len; \
-    void write_to(QByteArray& data) const; \
-    bool read_from_packet(const QByteArray& packet);
-
-struct SensorDataHeader : SensorDataPart
+struct SensorPacketStatus : SensorDataSection
 {
-    SENSOR_DATA_PART(9)
-
-    uint32_t offset = 0;
-    uint32_t total_len = 0;
-    uint8_t ref = SENSOR_DATA_INVALID_REF;
+    SENSOR_DATA_SECTION_LENGTH(2);
+    uint16_t status;
 };
 
-struct SensorConfig : SensorDataPart
+struct SensorPacketData : SensorDataSection
 {
-    SENSOR_DATA_PART(15)
+    SENSOR_DATA_SECTION_LENGTH(8);
+    uint32_t offset;
+    uint32_t totalBytes;
+};
 
+struct SensorConfig : SensorDataSection
+{
+    SENSOR_DATA_SECTION_LENGTH(15);
     uint8_t wakeup_behavior = 0;
     SensorSampleRates sample_rates = {};
     uint16_t sleep_delay = 0;
 };
 
-struct SensorStatus : SensorDataPart
-{
-    SENSOR_DATA_PART(9)
-
-    uint32_t log_used = 0;
-    uint32_t log_free = 0;
-    uint8_t last_reset_reason = 0;
-};
-
-struct SensorDataBytes : SensorDataPart
-{
-    SENSOR_DATA_PART(SENSOR_DATA_PAYLOAD_SIZE);
-    QByteArray bytes;
-};
+constexpr size_t SENSOR_PACKET_DATA_OFFSET = (SensorPacketHeader::BYTE_SIZE + SensorPacketData::BYTE_SIZE);
 
 #endif // PROTOCOL_H
