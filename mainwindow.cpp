@@ -80,7 +80,7 @@ void MainWindow::onApplySettings()
 {
     if(sensor)
     {
-        sensor->applyConfig(config);
+        sensor->sendConfig(config);
         ui->applyButton->setEnabled(false);
     }
 }

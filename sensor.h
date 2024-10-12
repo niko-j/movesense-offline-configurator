@@ -13,16 +13,15 @@ class Sensor : public QObject
 
 public:
     static const QBluetoothUuid serviceUuid;
-    static const QBluetoothUuid commandCharUuid;
-    static const QBluetoothUuid configCharUuid;
-    static const QBluetoothUuid dataCharUuid;
+    static const QBluetoothUuid rxUuid;
+    static const QBluetoothUuid txUuid;
 
     explicit Sensor(QObject* parent, const QBluetoothDeviceInfo& info);
 
     void connectDevice();
     void disconnectDevice();
 
-    bool applyConfig(const SensorConfig& conf);
+    uint8_t sendConfig(const SensorConfig& conf);
     uint8_t sendCommand(SensorCommands cmd);
 
     std::vector<uint8_t> downloadData();
@@ -39,8 +38,7 @@ public:
     {
         UnsupportedDevice,
         ControllerError,
-        ConfigReadFailure,
-        DataReadFailure,
+        ReadFailure,
     };
 
 private:
@@ -53,6 +51,8 @@ private:
     void onControllerError(QLowEnergyController::Error error);
     void onFinishServiceDiscovery();
 
+    uint8_t nextRef() const;
+
 signals:
     void onStateChanged(State state);
     void onConfigUpdated(const SensorConfig& config);
@@ -64,8 +64,6 @@ private:
     QBluetoothDeviceInfo _info;
     QLowEnergyController* _pController;
     QLowEnergyService* _svc;
-
-    uint8_t _requestRef;
     QMap<QUuid, QLowEnergyCharacteristic> _chars;
 
     struct DataTransmission
@@ -73,7 +71,6 @@ private:
         size_t received_bytes = 0;
         QByteArray bytes;
     };
-
     QMap<uint8_t, DataTransmission> _buffers;
 };
 
