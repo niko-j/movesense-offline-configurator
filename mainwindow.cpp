@@ -90,7 +90,8 @@ void MainWindow::onResetSettings()
     if(sensor)
     {
         config = {};
-        config.wakeup_behavior = SensorWakeUpDoubleTapOnOff;
+        config.wakeup_behavior = SensorWakeUpMovement;
+        config.sleep_delay = 30 * 60;
         onSensorConfigChanged(config);
         onApplySettings();
     }
