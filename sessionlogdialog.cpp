@@ -2,6 +2,7 @@
 #include "ui_sessionlogdialog.h"
 
 #include <QFileDialog>
+#include <QStandardPaths>
 #include <fstream>
 
 SessionLogDialog::SessionLogDialog(QWidget *parent)
@@ -125,7 +126,8 @@ void SessionLogDialog::onReceiveData(uint8_t ref, const QByteArray& data)
 {
     qInfo("Receiving data (ref: %u)", ref);
 
-    QString filename = QFileDialog::getSaveFileName(this, "Save log");
+    auto path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    QString filename = QFileDialog::getSaveFileName(this, "Save log", path, "SBEM File (*.sbem)");
     if(filename.isEmpty())
         return;
 
