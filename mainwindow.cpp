@@ -90,7 +90,7 @@ void MainWindow::onResetSettings()
     if(sensor)
     {
         config = {};
-        config.wakeup_behavior = SensorWakeUpMovement;
+        config.wakeup_behavior = SensorWakeUpConnector;
         config.sleep_delay = 30 * 60;
         onSensorConfigChanged(config);
         onApplySettings();
@@ -327,16 +327,14 @@ QWidget* MainWindow::createDeviceSettingsItem()
 
         QList<QPair<QString, SensorWakeUp>> wakeupOptionItems = {
             { "Always on", SensorWakeUpAlwaysOn },
-            { "Heartbeat detected / studs connected", SensorWakeUpHR },
+            { "Connected", SensorWakeUpConnector },
             { "Movement", SensorWakeUpMovement },
-            { "Single tap (only wakeup)", SensorWakeUpSingleTapOn },
-            { "Single tap (ON and OFF)", SensorWakeUpSingleTapOnOff },
-            { "Double tap (only wakeup)", SensorWakeUpDoubleTapOn },
-            { "Double tap (ON and OFF)", SensorWakeUpDoubleTapOnOff }
+            { "Single tap", SensorWakeUpSingleTapOn },
+            { "Double tap", SensorWakeUpDoubleTapOn },
         };
 
         QList<QPair<QString, uint16_t>> sleepDelayItems = {
-            { "Never (use with caution)", 0 },
+            { "Never (double tap to sleep)", 0 },
             { "30 seconds", 30 },
             { "1 minute", 60 },
             { "5 minutes", 5 * 60 },

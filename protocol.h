@@ -66,12 +66,10 @@ enum SensorMeasurements
 enum SensorWakeUp
 {
     SensorWakeUpAlwaysOn,
-    SensorWakeUpHR,
+    SensorWakeUpConnector,
     SensorWakeUpMovement,
     SensorWakeUpSingleTapOn,
-    SensorWakeUpSingleTapOnOff,
     SensorWakeUpDoubleTapOn,
-    SensorWakeUpDoubleTapOnOff,
 };
 
 union SensorSampleRates
