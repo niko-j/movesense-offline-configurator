@@ -80,7 +80,7 @@ void SensorData::write_to(QByteArray& data) const
 
 bool SensorData::read_from_packet(const QByteArray& packet)
 {
-    if(packet.size() >= SensorHeader::BYTE_SIZE + BYTE_SIZE)
+    if(packet.size() >= SensorHeader::BYTE_SIZE + 8)
     {
         if(packet.at(0) != SensorPacketTypeData)
             return false;

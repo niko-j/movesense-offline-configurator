@@ -134,6 +134,7 @@ void MainWindow::onSensorStateChanged(Sensor::State state)
         case Sensor::Disconnected:
         {
             qInfo("Sensor disconnected!");
+            onCloseSessionLogs();
             sensor.reset();
 
             ui->resetButton->setEnabled(false);

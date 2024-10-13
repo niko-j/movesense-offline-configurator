@@ -53,7 +53,7 @@ uint8_t Sensor::sendConfig(const SensorConfig& config)
     return header.requestReference;
 }
 
-uint8_t Sensor::sendCommand(SensorCommands cmd)
+uint8_t Sensor::sendCommand(SensorCommands cmd, const QByteArray& params)
 {
     if(!_chars.count(txUuid))
         return false;
@@ -68,6 +68,7 @@ uint8_t Sensor::sendCommand(SensorCommands cmd)
 
     SensorCommand command;
     command.command = cmd;
+    command.params = params;
 
     QByteArray data;
     header.write_to(data);
@@ -171,6 +172,7 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
         }
         qInfo("Received status %u for request %u",
               status.status, header.requestReference);
+        emit onStatusResponse(header.requestReference, status.status);
         break;
     }
     case SensorPacketTypeConfig:
@@ -192,7 +194,7 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
             emit onError(Error::ReadFailure);
             return;
         }
-        qInfo("RECEIVED LOG LIST");
+        emit onLogListReceived(header.requestReference, list.items, list.complete);
         break;
     }
     case SensorPacketTypeData:

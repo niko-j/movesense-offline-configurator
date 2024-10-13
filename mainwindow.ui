@@ -109,7 +109,7 @@
           <item>
            <widget class="QPushButton" name="sessionLogsButton">
             <property name="text">
-             <string>Session Logs</string>
+             <string>Logs</string>
             </property>
            </widget>
           </item>

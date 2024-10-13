@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Logs</string>
   </property>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
@@ -40,7 +40,7 @@
       <item>
        <widget class="QLabel" name="listTitle">
         <property name="text">
-         <string>Session Logs</string>
+         <string>Logs</string>
         </property>
        </widget>
       </item>
@@ -74,24 +74,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QListView" name="listView"/>
-    </item>
-    <item>
-     <widget class="QScrollArea" name="logInfoArea">
-      <property name="widgetResizable">
-       <bool>true</bool>
-      </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>775</width>
-         <height>229</height>
-        </rect>
-       </property>
-      </widget>
-     </widget>
+     <widget class="QListWidget" name="listWidget"/>
     </item>
     <item>
      <layout class="QHBoxLayout" name="logTools">
@@ -103,29 +86,16 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="downloadAllButton">
-        <property name="text">
-         <string>Download All</string>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>0</number>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="downloadSelectedButton">
         <property name="text">
-         <string>Download Selected</string>
+         <string>Download</string>
         </property>
        </widget>
       </item>
