@@ -240,6 +240,24 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
         });
     layout->addWidget(temp);
 
+    QWidget* activity = createMeasurementSettingsItem(
+        "Activity",
+        SENSOR_SAMPLERATES_ONOFF,
+        config.sample_rates.by_sensor.Activity,
+        [this](uint16_t val) {
+            this->config.sample_rates.by_sensor.Activity = val;
+        });
+    layout->addWidget(activity);
+
+    QWidget* tapDetection = createMeasurementSettingsItem(
+        "Temp",
+        SENSOR_SAMPLERATES_ONOFF,
+        config.sample_rates.by_sensor.TapDetection,
+        [this](uint16_t val) {
+            this->config.sample_rates.by_sensor.TapDetection = val;
+        });
+    layout->addWidget(tapDetection);
+
     QWidget* dev = createDeviceSettingsItem();
     layout->addWidget(dev);
 

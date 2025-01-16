@@ -59,6 +59,8 @@ enum SensorMeasurements
     SensorMeasGyro,
     SensorMeasMagn,
     SensorMeasTemp,
+    SensorMeasActivity,
+    SensorMeasTapDetection,
 
     SensorMeasCount
 };
@@ -81,7 +83,9 @@ union SensorSampleRates
             Acceleration,
             Gyro,
             Magnetometer,
-            Temperature;
+            Temperature,
+            Activity,
+            TapDetection;
     } by_sensor;
     uint16_t data[SensorMeasCount];
 };
@@ -116,7 +120,7 @@ struct SensorData : SensorPacketSection
 
 struct SensorConfig : SensorPacketSection
 {
-    SENSOR_PACKET_SECTION(15);
+    SENSOR_PACKET_SECTION(3 + 2 * SensorMeasCount);
     uint8_t wakeup_behavior = 0;
     SensorSampleRates sample_rates = {};
     uint16_t sleep_delay = 0;
