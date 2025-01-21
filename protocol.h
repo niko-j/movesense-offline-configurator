@@ -7,13 +7,16 @@
 
 #define SENSOR_OFF 0
 #define SENSOR_ON 1
+#define SENSOR_INVALID_REF 0
 
 #define SENSOR_SAMPLERATES_ECG { SENSOR_OFF, 125, 128, 200, 250, 256, 500, 512 }
 #define SENSOR_SAMPLERATES_IMU { SENSOR_OFF, 13, 26, 52, 104, 208, 416, 833, 1666 }
 #define SENSOR_SAMPLERATES_ONOFF { SENSOR_OFF, SENSOR_ON }
 
-#define SENSOR_PAYLOAD_SIZE 120
-#define SENSOR_INVALID_REF 0
+constexpr uint32_t SENSOR_MTU = 161;
+constexpr uint32_t SENSOR_PACKET_SIZE = (SENSOR_MTU - 3);
+constexpr uint32_t SENSOR_PACKET_HEADER_SIZE = 2;
+constexpr uint32_t SENSOR_PACKET_PAYLOAD_SIZE = (SENSOR_PACKET_SIZE - SENSOR_PACKET_HEADER_SIZE);
 
 struct SensorPacketSection
 {
@@ -22,7 +25,8 @@ struct SensorPacketSection
 };
 
 #define SENSOR_PACKET_SECTION(Length) \
-static constexpr size_t BYTE_SIZE = Length; \
+    static_assert(Length <= SENSOR_PACKET_PAYLOAD_SIZE); \
+    static constexpr size_t BYTE_SIZE = Length; \
     void write_to(QByteArray& data) const; \
     bool read_from_packet(const QByteArray& packet);
 
@@ -112,7 +116,7 @@ struct SensorStatus : SensorPacketSection
 
 struct SensorData : SensorPacketSection
 {
-    SENSOR_PACKET_SECTION(8 + SENSOR_PAYLOAD_SIZE);
+    SENSOR_PACKET_SECTION(SENSOR_PACKET_PAYLOAD_SIZE);
     uint32_t offset;
     uint32_t totalBytes;
     QByteArray bytes;
