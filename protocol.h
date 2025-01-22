@@ -59,6 +59,7 @@ enum SensorMeasurements
 {
     SensorMeasECG,
     SensorMeasHR,
+    SensorMeasRR,
     SensorMeasAccel,
     SensorMeasGyro,
     SensorMeasMagn,
@@ -84,6 +85,7 @@ union SensorSampleRates
         uint16_t
             ECG,
             HeartRate,
+            RtoR,
             Acceleration,
             Gyro,
             Magnetometer,

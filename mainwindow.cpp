@@ -115,7 +115,7 @@ void MainWindow::onSettingsEdited()
 
 void MainWindow::onOpenSessionLogs()
 {
-    this->hide();
+    //this->hide();
     sessionDialog->show();
     sessionDialog->setSensorDevice(sensor);
 }
@@ -124,7 +124,7 @@ void MainWindow::onCloseSessionLogs()
 {
     sessionDialog->setSensorDevice(nullptr);
     sessionDialog->hide();
-    this->show();
+    //this->show();
 }
 
 void MainWindow::onSensorStateChanged(Sensor::State state)
@@ -187,7 +187,7 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     QVBoxLayout* layout = new QVBoxLayout(settings);
 
     QWidget* ecg = createMeasurementSettingsItem(
-        "ECG",
+        "Single-lead ECG",
         SENSOR_SAMPLERATES_ECG,
         config.sample_rates.by_sensor.ECG,
         [this](uint16_t val) {
@@ -196,7 +196,7 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     layout->addWidget(ecg);
 
     QWidget* hr = createMeasurementSettingsItem(
-        "HR",
+        "Heart rate (average bpm)",
         SENSOR_SAMPLERATES_ONOFF,
         config.sample_rates.by_sensor.HeartRate,
         [this](uint16_t val) {
@@ -204,8 +204,17 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
         });
     layout->addWidget(hr);
 
+    QWidget* rr = createMeasurementSettingsItem(
+        "R-to-R intervals (ms)",
+        SENSOR_SAMPLERATES_ONOFF,
+        config.sample_rates.by_sensor.RtoR,
+        [this](uint16_t val) {
+            this->config.sample_rates.by_sensor.RtoR = val;
+        });
+    layout->addWidget(rr);
+
     QWidget* accel = createMeasurementSettingsItem(
-        "Acceleration",
+        "Linear acceleration (m/s^2)",
         SENSOR_SAMPLERATES_IMU,
         config.sample_rates.by_sensor.Acceleration,
         [this](uint16_t val) {
@@ -214,7 +223,7 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     layout->addWidget(accel);
 
     QWidget* gyro = createMeasurementSettingsItem(
-        "Gyro",
+        "Gyroscope (dps)",
         SENSOR_SAMPLERATES_IMU,
         config.sample_rates.by_sensor.Gyro,
         [this](uint16_t val) {
@@ -223,7 +232,7 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     layout->addWidget(gyro);
 
     QWidget* magn = createMeasurementSettingsItem(
-        "Magnetometer",
+        "Magnetometer (μT)",
         SENSOR_SAMPLERATES_IMU,
         config.sample_rates.by_sensor.Magnetometer,
         [this](uint16_t val) {
@@ -232,7 +241,7 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     layout->addWidget(magn);
 
     QWidget* temp = createMeasurementSettingsItem(
-        "Temp",
+        "Temperature (°C)",
         SENSOR_SAMPLERATES_ONOFF,
         config.sample_rates.by_sensor.Temperature,
         [this](uint16_t val) {
@@ -250,7 +259,7 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     layout->addWidget(activity);
 
     QWidget* tapDetection = createMeasurementSettingsItem(
-        "Tap Detection",
+        "Tap detection",
         SENSOR_SAMPLERATES_ONOFF,
         config.sample_rates.by_sensor.TapDetection,
         [this](uint16_t val) {
@@ -346,7 +355,7 @@ QWidget* MainWindow::createDeviceSettingsItem()
 
         QList<QPair<QString, SensorWakeUp>> wakeupOptionItems = {
             { "Always on", SensorWakeUpAlwaysOn },
-            { "Connected", SensorWakeUpConnector },
+            { "Connectors", SensorWakeUpConnector },
             { "Movement", SensorWakeUpMovement },
             { "Single tap", SensorWakeUpSingleTapOn },
             { "Double tap", SensorWakeUpDoubleTapOn },
