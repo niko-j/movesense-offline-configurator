@@ -48,6 +48,11 @@ private:
         uint16_t current,
         std::function<void(uint16_t)> onValueChanged);
 
+    QWidget* createToggle(
+        const QString& name,
+        bool current,
+        std::function<void(bool)> onValueChanged);
+
     QWidget* createDeviceSettingsItem();
 
     Ui::MainWindow *ui;

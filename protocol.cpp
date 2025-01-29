@@ -101,9 +101,10 @@ bool SensorData::read_from_packet(const QByteArray& packet)
 
 void SensorConfig::write_to(QByteArray& data) const
 {
-    data.append((const char*) &wakeup_behavior, sizeof(wakeup_behavior));
+    data.append((const char*) &options, sizeof(options));
     data.append((const char*) sample_rates.data, sizeof(sample_rates.data));
     data.append((const char*) &sleep_delay, sizeof(sleep_delay));
+    data.append((const char*) &wakeup_behavior, sizeof(wakeup_behavior));
 }
 
 bool SensorConfig::read_from_packet(const QByteArray& packet)
@@ -114,13 +115,22 @@ bool SensorConfig::read_from_packet(const QByteArray& packet)
             return false;
 
         const auto* data = packet.data() + SensorHeader::BYTE_SIZE;
-        wakeup_behavior = data[0]; data += 1;
+
+        options = data[0];
+        data += 1;
+
         for(auto i = 0; i < SensorMeasCount; i++)
         {
             sample_rates.data[i] = *reinterpret_cast<const uint16_t*>(data);
             data += sizeof(uint16_t);
         }
+
         sleep_delay = *reinterpret_cast<const uint16_t*>(data);
+        data += 2;
+
+        wakeup_behavior = data[0];
+        //data += 1;
+
         return true;
     }
     return false;

@@ -96,6 +96,11 @@ union SensorSampleRates
     uint16_t data[SensorMeasCount];
 };
 
+enum SensorOptionFlags
+{
+    SensorOptionCompressECG = 0x01
+};
+
 struct SensorHeader : SensorPacketSection
 {
     SENSOR_PACKET_SECTION(2);
@@ -126,10 +131,11 @@ struct SensorData : SensorPacketSection
 
 struct SensorConfig : SensorPacketSection
 {
-    SENSOR_PACKET_SECTION(3 + 2 * SensorMeasCount);
-    uint8_t wakeup_behavior = 0;
+    SENSOR_PACKET_SECTION(4 + 2 * SensorMeasCount);
+    uint8_t options = 0;
     SensorSampleRates sample_rates = {};
     uint16_t sleep_delay = 0;
+    uint8_t wakeup_behavior = 0;
 };
 
 struct SensorLogItem

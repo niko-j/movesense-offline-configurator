@@ -195,6 +195,17 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
         });
     layout->addWidget(ecg);
 
+    QWidget* ecgCompression = createToggle(
+        "Use experimental ECG compression",
+        !!(config.options & SensorOptionCompressECG),
+        [this](bool enable) {
+            if(enable)
+                this->config.options |= SensorOptionCompressECG;
+            else
+                this->config.options &= ~SensorOptionCompressECG;
+        });
+    layout->addWidget(ecgCompression);
+
     QWidget* hr = createMeasurementSettingsItem(
         "Heart rate (average bpm)",
         SENSOR_SAMPLERATES_ONOFF,
@@ -341,6 +352,28 @@ QWidget* MainWindow::createMeasurementSettingsItem(
         });
 
         layout->addWidget(dropdown, 0, 1);
+    }
+    return item;
+}
+
+QWidget* MainWindow::createToggle(
+    const QString& name,
+    bool current,
+    std::function<void(bool)> onValueChanged)
+{
+    QWidget* item = new QWidget();
+    QGridLayout* layout = new QGridLayout(item);
+    {
+        QCheckBox* checkbox = new QCheckBox();
+        checkbox->setChecked(current);
+        checkbox->setText(name);
+
+        connect(checkbox, &QCheckBox::checkStateChanged, this, [this, onValueChanged, checkbox](Qt::CheckState state) {
+            onValueChanged(state == Qt::Checked);
+            this->onSettingsEdited();
+        });
+
+        layout->addWidget(checkbox, 0, 0);
     }
     return item;
 }
