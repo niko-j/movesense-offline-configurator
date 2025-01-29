@@ -67,6 +67,7 @@ void MainWindow::onConnect()
     connect(sensor.get(), &Sensor::onStateChanged, this, &MainWindow::onSensorStateChanged);
     connect(sensor.get(), &Sensor::onError, this, &MainWindow::onSensorError);
     connect(sensor.get(), &Sensor::onConfigUpdated, this, &MainWindow::onSensorConfigChanged);
+    connect(sensor.get(), &Sensor::onStatusResponse, this, &MainWindow::onSensorStatus);
 
     sensor->connectDevice();
 }
@@ -95,11 +96,6 @@ void MainWindow::onResetSettings()
         onSensorConfigChanged(config);
         onApplySettings();
     }
-}
-
-void MainWindow::onDownloadData()
-{
-    qWarning("Not implemented!");
 }
 
 void MainWindow::onSelectDevice()
@@ -282,6 +278,15 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     layout->addWidget(dev);
 
     ui->settingsScrollArea->setWidget(settings);
+}
+
+void MainWindow::onSensorStatus(uint8_t ref, uint16_t status)
+{
+    if(status >= 300)
+    {
+        QString msg = QString::asprintf("Operation failed: %u", status);
+        QMessageBox::warning(this, "Sensor error", msg);
+    }
 }
 
 void MainWindow::onUpdateDeviceList(const QList<QBluetoothDeviceInfo>& devices)

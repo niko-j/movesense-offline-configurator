@@ -27,7 +27,6 @@ private:
     void onDisconnect();
     void onApplySettings();
     void onResetSettings();
-    void onDownloadData();
     void onSelectDevice();
     void onSettingsEdited();
 
@@ -37,6 +36,7 @@ private:
     void onSensorStateChanged(Sensor::State state);
     void onSensorError(Sensor::Error error);
     void onSensorConfigChanged(const SensorConfig& config);
+    void onSensorStatus(uint8_t ref, uint16_t status);
 
     void onUpdateDeviceList(const QList<QBluetoothDeviceInfo>& devices);
     void onScannerStateChanged(Scanner::State state);
