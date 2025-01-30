@@ -7,6 +7,12 @@
 #include <QComboBox>
 #include <QCheckBox>
 
+#define SENSOR_OFF 0
+#define SENSOR_ON 1
+#define SENSOR_SAMPLERATES_ECG { SENSOR_OFF, 125, 128, 200, 250, 256, 500, 512 }
+#define SENSOR_SAMPLERATES_IMU { SENSOR_OFF, 13, 26, 52, 104, 208, 416, 833, 1666 }
+#define SENSOR_SAMPLERATES_ONOFF { SENSOR_OFF, SENSOR_ON }
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , scanner(this)
@@ -91,8 +97,8 @@ void MainWindow::onResetSettings()
     if(sensor)
     {
         config = {};
-        config.wakeup_behavior = SensorWakeUpConnector;
-        config.sleep_delay = 30 * 60;
+        config.wakeUpBehavior = OfflineConfig::WakeUpConnector;
+        config.sleepDelay = 30 * 60;
         onSensorConfigChanged(config);
         onApplySettings();
     }
@@ -173,7 +179,7 @@ void MainWindow::onSensorError(Sensor::Error error)
     QMessageBox::warning(this, "Sensor error", msg);
 }
 
-void MainWindow::onSensorConfigChanged(const SensorConfig& config)
+void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 {
     this->config = config;
 
@@ -185,92 +191,92 @@ void MainWindow::onSensorConfigChanged(const SensorConfig& config)
     QWidget* ecg = createMeasurementSettingsItem(
         "Single-lead ECG",
         SENSOR_SAMPLERATES_ECG,
-        config.sample_rates.by_sensor.ECG,
+        config.sampleRates.bySensor.ECG,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.ECG = val;
+            this->config.sampleRates.bySensor.ECG = val;
         });
     layout->addWidget(ecg);
 
     QWidget* ecgCompression = createToggle(
         "Use experimental ECG compression",
-        !!(config.options & SensorOptionCompressECG),
+        !!(config.optionsFlags & OfflineConfig::OptionsCompressECG),
         [this](bool enable) {
             if(enable)
-                this->config.options |= SensorOptionCompressECG;
+                this->config.optionsFlags |= OfflineConfig::OptionsCompressECG;
             else
-                this->config.options &= ~SensorOptionCompressECG;
+                this->config.optionsFlags &= ~OfflineConfig::OptionsCompressECG;
         });
     layout->addWidget(ecgCompression);
 
     QWidget* hr = createMeasurementSettingsItem(
         "Heart rate (average bpm)",
         SENSOR_SAMPLERATES_ONOFF,
-        config.sample_rates.by_sensor.HeartRate,
+        config.sampleRates.bySensor.HeartRate,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.HeartRate = val;
+            this->config.sampleRates.bySensor.HeartRate = val;
         });
     layout->addWidget(hr);
 
     QWidget* rr = createMeasurementSettingsItem(
         "R-to-R intervals (ms)",
         SENSOR_SAMPLERATES_ONOFF,
-        config.sample_rates.by_sensor.RtoR,
+        config.sampleRates.bySensor.RtoR,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.RtoR = val;
+            this->config.sampleRates.bySensor.RtoR = val;
         });
     layout->addWidget(rr);
 
     QWidget* accel = createMeasurementSettingsItem(
         "Linear acceleration (m/s^2)",
         SENSOR_SAMPLERATES_IMU,
-        config.sample_rates.by_sensor.Acceleration,
+        config.sampleRates.bySensor.Acc,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.Acceleration = val;
+            this->config.sampleRates.bySensor.Acc = val;
         });
     layout->addWidget(accel);
 
     QWidget* gyro = createMeasurementSettingsItem(
         "Gyroscope (dps)",
         SENSOR_SAMPLERATES_IMU,
-        config.sample_rates.by_sensor.Gyro,
+        config.sampleRates.bySensor.Gyro,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.Gyro = val;
+            this->config.sampleRates.bySensor.Gyro = val;
         });
     layout->addWidget(gyro);
 
     QWidget* magn = createMeasurementSettingsItem(
         "Magnetometer (μT)",
         SENSOR_SAMPLERATES_IMU,
-        config.sample_rates.by_sensor.Magnetometer,
+        config.sampleRates.bySensor.Magn,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.Magnetometer = val;
+            this->config.sampleRates.bySensor.Magn = val;
         });
     layout->addWidget(magn);
 
     QWidget* temp = createMeasurementSettingsItem(
         "Temperature (°C)",
         SENSOR_SAMPLERATES_ONOFF,
-        config.sample_rates.by_sensor.Temperature,
+        config.sampleRates.bySensor.Temp,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.Temperature = val;
+            this->config.sampleRates.bySensor.Temp = val;
         });
     layout->addWidget(temp);
 
     QWidget* activity = createMeasurementSettingsItem(
         "Activity",
         SENSOR_SAMPLERATES_ONOFF,
-        config.sample_rates.by_sensor.Activity,
+        config.sampleRates.bySensor.Activity,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.Activity = val;
+            this->config.sampleRates.bySensor.Activity = val;
         });
     layout->addWidget(activity);
 
     QWidget* tapDetection = createMeasurementSettingsItem(
         "Tap detection",
         SENSOR_SAMPLERATES_ONOFF,
-        config.sample_rates.by_sensor.TapDetection,
+        config.sampleRates.bySensor.TapDetection,
         [this](uint16_t val) {
-            this->config.sample_rates.by_sensor.TapDetection = val;
+            this->config.sampleRates.bySensor.TapDetection = val;
         });
     layout->addWidget(tapDetection);
 
@@ -391,12 +397,12 @@ QWidget* MainWindow::createDeviceSettingsItem()
         QLabel* wakeupLabel = new QLabel("Wake up device when");
         layout->addWidget(wakeupLabel, 0, 0);
 
-        QList<QPair<QString, SensorWakeUp>> wakeupOptionItems = {
-            { "Always on", SensorWakeUpAlwaysOn },
-            { "Connectors", SensorWakeUpConnector },
-            { "Movement", SensorWakeUpMovement },
-            { "Single tap", SensorWakeUpSingleTapOn },
-            { "Double tap", SensorWakeUpDoubleTapOn },
+        QList<QPair<QString, OfflineConfig::WakeUpBehavior>> wakeupOptionItems = {
+            { "Always on", OfflineConfig::WakeUpAlwaysOn },
+            { "Connectors", OfflineConfig::WakeUpConnector },
+            { "Movement", OfflineConfig::WakeUpMovement },
+            { "Single tap", OfflineConfig::WakeUpSingleTap },
+            { "Double tap", OfflineConfig::WakeUpDoubleTap },
         };
 
         QList<QPair<QString, uint16_t>> sleepDelayItems = {
@@ -420,7 +426,7 @@ QWidget* MainWindow::createDeviceSettingsItem()
             for(auto& item : wakeupOptionItems)
             {
                 wakeupOptions->addItem(item.first, item.second);
-                if(item.second == this->config.wakeup_behavior)
+                if(item.second == this->config.wakeUpBehavior)
                     select = i;
                 i++;
             }
@@ -438,7 +444,7 @@ QWidget* MainWindow::createDeviceSettingsItem()
             for(auto& item : sleepDelayItems)
             {
                 sleepDelayOptions->addItem(item.first, item.second);
-                if(item.second == this->config.sleep_delay)
+                if(item.second == this->config.sleepDelay)
                     select = i;
                 i++;
             }
@@ -448,13 +454,13 @@ QWidget* MainWindow::createDeviceSettingsItem()
 
         connect(wakeupOptions, &QComboBox::currentIndexChanged, this, [this, wakeupOptions](int index) {
             uint8_t value = wakeupOptions->itemData(index).toInt();
-            this->config.wakeup_behavior = value;
+            this->config.wakeUpBehavior = (OfflineConfig::WakeUpBehavior) value;
             this->onSettingsEdited();
         });
 
         connect(sleepDelayOptions, &QComboBox::currentIndexChanged, this, [this, sleepDelayOptions](int index) {
             uint16_t value = sleepDelayOptions->itemData(index).toInt();
-            this->config.sleep_delay = value;
+            this->config.sleepDelay = value;
             this->onSettingsEdited();
         });
     }

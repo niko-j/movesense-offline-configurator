@@ -64,7 +64,7 @@ void SessionLogDialog::onEraseLogs()
     onClearList();
     if(this->sensor)
     {
-        uint8_t ref = this->sensor->sendCommand(SensorCmdClearLogs);
+        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdClearLogs);
         startRequest(ref);
     }
 }
@@ -74,7 +74,7 @@ void SessionLogDialog::onFetchSessions()
     onClearList();
     if(this->sensor)
     {
-        uint8_t ref = this->sensor->sendCommand(SensorCmdListLogs);
+        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdListLogs);
         startRequest(ref);
     }
 }
@@ -91,7 +91,7 @@ void SessionLogDialog::onDownloadSelected()
         QByteArray params;
         params.append((const char*) params_data, 2);
 
-        uint8_t ref = this->sensor->sendCommand(SensorCmdListLogById, params);
+        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdReadLog, params);
         startRequest(ref);
     }
 }
@@ -108,7 +108,7 @@ void SessionLogDialog::onClearList()
     ui->listWidget->clear();
 }
 
-void SessionLogDialog::onReceiveLogList(uint8_t ref, const QList<SensorLogItem> items, bool complete)
+void SessionLogDialog::onReceiveLogList(uint8_t ref, const QList<OfflineLogPacket::LogItem>& items, bool complete)
 {
     for(const auto& item : items)
     {
@@ -171,7 +171,7 @@ void SessionLogDialog::completeRequest(uint8_t ref)
     if(pendingRequestRef != ref)
         return;
 
-    pendingRequestRef = SENSOR_INVALID_REF;
+    pendingRequestRef = OfflinePacket::INVALID_REF;
 
     ui->progressBar->setValue(100);
 

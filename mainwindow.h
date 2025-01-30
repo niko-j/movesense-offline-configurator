@@ -35,7 +35,7 @@ private:
 
     void onSensorStateChanged(Sensor::State state);
     void onSensorError(Sensor::Error error);
-    void onSensorConfigChanged(const SensorConfig& config);
+    void onSensorConfigChanged(const OfflineConfig& config);
     void onSensorStatus(uint8_t ref, uint16_t status);
 
     void onUpdateDeviceList(const QList<QBluetoothDeviceInfo>& devices);
@@ -58,7 +58,7 @@ private:
     Ui::MainWindow *ui;
     Scanner scanner;
     QSharedPointer<Sensor> sensor;
-    SensorConfig config;
+    OfflineConfig config;
 
     SessionLogDialog* sessionDialog;
 };

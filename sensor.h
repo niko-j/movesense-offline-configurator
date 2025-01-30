@@ -1,7 +1,10 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
-#include "protocol.h"
+#include "protocol/OfflineConfig.hpp"
+#include "protocol/packets/OfflineCommandPacket.hpp"
+#include "protocol/packets/OfflineLogPacket.hpp"
+
 #include <QObject>
 #include <QBluetoothDeviceInfo>
 #include <QLowEnergyService>
@@ -21,8 +24,9 @@ public:
     void connectDevice();
     void disconnectDevice();
 
-    uint8_t sendConfig(const SensorConfig& conf);
-    uint8_t sendCommand(SensorCommands cmd, const QByteArray& params = {});
+    uint8_t sendConfig(const OfflineConfig& conf);
+    uint8_t sendCommand(OfflineCommandPacket::Command cmd, const QByteArray& params = {});
+    uint8_t sendPacket(OfflinePacket& packet);
 
     std::vector<uint8_t> downloadData();
 
@@ -55,8 +59,8 @@ private:
 
 signals:
     void onStateChanged(State state);
-    void onConfigUpdated(const SensorConfig& config);
-    void onLogListReceived(uint8_t ref, const QList<SensorLogItem>& logs, bool complete);
+    void onConfigUpdated(const OfflineConfig& config);
+    void onLogListReceived(uint8_t ref, const QList<OfflineLogPacket::LogItem>& logs, bool complete);
     void onDataTransmissionCompleted(uint8_t cmdRef, const QByteArray& data);
     void onDataTransmissionProgressUpdate(uint8_t ref, uint32_t received_bytes, uint32_t total_bytes);
     void onStatusResponse(uint8_t ref, uint16_t status);
