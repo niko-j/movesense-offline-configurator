@@ -60,7 +60,7 @@ uint8_t Sensor::sendPacket(OfflinePacket& packet)
         return packet.INVALID_REF;
 
     QByteArray data(OfflinePacket::MAX_PACKET_SIZE, 0);
-    WritableStream stream((uint8_t*) data.data(), data.size());
+    WritableBuffer stream((uint8_t*) data.data(), data.size());
     packet.Write(stream);
     data.resize(stream.get_write_pos());
     _svc->writeCharacteristic(c, data);
@@ -139,10 +139,10 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
     qInfo("Characteristic changed: %s", c.uuid().toString().toStdString().c_str());
     OfflinePacket::Type type;
     uint8_t ref;
-    ByteBufferConstWrapper buffer((const uint8_t*) value.data(), value.size());
+    ReadableBuffer buffer((const uint8_t*) value.data(), value.size());
 
     bool valid = buffer.read(&type, 1) && buffer.read(&ref, 1) && buffer.seek_read(0);
-    if(valid || ref == OfflinePacket::INVALID_REF)
+    if(!valid || ref == OfflinePacket::INVALID_REF)
     {
         qInfo("Received invalid packet");
         emit onError(Error::ReadFailure);
