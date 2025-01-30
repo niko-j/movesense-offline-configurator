@@ -24,10 +24,18 @@ if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES "arm64")
 endif()
 
+set(MACOSX_BUNDLE_ICON_FILE movesense.icns)
+
+# And the following tells CMake where to find and install the file itself.
+set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/movesense.icns")
+set_source_files_properties(${app_icon_macos} PROPERTIES
+       MACOSX_PACKAGE_LOCATION "Resources")
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(movesense-offline-configurator
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        ${app_icon_macos}
 
         sensor.h sensor.cpp
         scanner.h scanner.cpp

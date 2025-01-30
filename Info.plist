@@ -6,5 +6,9 @@
         <string>Used to connect to BTLE sensors</string>
         <key>NSBluetoothAlwaysUsageDescription</key>
         <string>Used to connect to BTLE sensors</string>
+        <key>CFBundleIconFile</key>
+        <string>movesense</string>
+        <key>CFBundleIconName</key>
+        <string>movesense</string>
 </dict>
 </plist>
