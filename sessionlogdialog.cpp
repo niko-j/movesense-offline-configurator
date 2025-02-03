@@ -56,6 +56,8 @@ void SessionLogDialog::setSensorDevice(QSharedPointer<Sensor> sensor)
         ui->refreshListButton->setEnabled(true);
         ui->eraseLogsButton->setEnabled(true);
     }
+
+    onFetchSessions();
 }
 
 
