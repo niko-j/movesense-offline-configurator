@@ -42,13 +42,11 @@ uint8_t Sensor::sendConfig(const OfflineConfig& config)
     return sendPacket(packet);
 }
 
-uint8_t Sensor::sendCommand(OfflineCommandPacket::Command cmd, const QByteArray& params)
+uint8_t Sensor::sendCommand(OfflineCommandPacket::Command cmd, OfflineCommandPacket::CommandParams params)
 {
-    OfflineCommandPacket packet(nextRef(), cmd);
-    packet.params.write(params.data(), params.size());
+    OfflineCommandPacket packet(nextRef(), cmd, params);
     return sendPacket(packet);
 }
-
 
 uint8_t Sensor::sendPacket(OfflinePacket& packet)
 {
@@ -123,7 +121,7 @@ void Sensor::onServiceStateChanged(QLowEnergyService::ServiceState state)
                 }
             }
         }
-        sendCommand(OfflineCommandPacket::CmdReadConfig);
+        sendCommand(OfflineCommandPacket::CmdReadConfig, {});
         break;
     }
     default:

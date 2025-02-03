@@ -64,7 +64,7 @@ void SessionLogDialog::onEraseLogs()
     onClearList();
     if(this->sensor)
     {
-        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdClearLogs);
+        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdClearLogs, {});
         startRequest(ref);
     }
 }
@@ -74,7 +74,7 @@ void SessionLogDialog::onFetchSessions()
     onClearList();
     if(this->sensor)
     {
-        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdListLogs);
+        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdListLogs, {});
         startRequest(ref);
     }
 }
@@ -84,12 +84,8 @@ void SessionLogDialog::onDownloadSelected()
     auto index = ui->listWidget->currentIndex();
     if(this->sensor && index.isValid())
     {
-        uint16_t id = (uint16_t) (index.row() + 1);
-        uint8_t params_data[2] = {};
-        memcpy(params_data, &id, 2);
-
-        QByteArray params;
-        params.append((const char*) params_data, 2);
+        OfflineCommandPacket::CommandParams params;
+        params.ReadLogParams.logIndex = (uint16_t) (index.row() + 1);
 
         uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdReadLog, params);
         startRequest(ref);

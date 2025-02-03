@@ -25,7 +25,7 @@ public:
     void disconnectDevice();
 
     uint8_t sendConfig(const OfflineConfig& conf);
-    uint8_t sendCommand(OfflineCommandPacket::Command cmd, const QByteArray& params = {});
+    uint8_t sendCommand(OfflineCommandPacket::Command cmd, OfflineCommandPacket::CommandParams params);
     uint8_t sendPacket(OfflinePacket& packet);
 
     std::vector<uint8_t> downloadData();
