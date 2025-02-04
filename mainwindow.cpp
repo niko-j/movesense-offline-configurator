@@ -1,17 +1,12 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "protocol/OfflineConstants.hpp"
 
 #include <QtLogging>
 #include <QMessageBox>
 #include <QLayout>
 #include <QComboBox>
 #include <QCheckBox>
-
-#define SENSOR_OFF 0
-#define SENSOR_ON 1
-#define SENSOR_SAMPLERATES_ECG { SENSOR_OFF, 125, 128, 200, 250, 256, 500, 512 }
-#define SENSOR_SAMPLERATES_IMU { SENSOR_OFF, 13, 26, 52, 104, 208, 416, 833, 1666 }
-#define SENSOR_SAMPLERATES_ONOFF { SENSOR_OFF, SENSOR_ON }
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -190,7 +185,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* ecg = createMeasurementSettingsItem(
         "Single-lead ECG",
-        SENSOR_SAMPLERATES_ECG,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_ECG),
         config.sampleRates.bySensor.ECG,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.ECG = val;
@@ -210,7 +205,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* hr = createMeasurementSettingsItem(
         "Heart rate (average bpm)",
-        SENSOR_SAMPLERATES_ONOFF,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
         config.sampleRates.bySensor.HeartRate,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.HeartRate = val;
@@ -219,7 +214,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* rr = createMeasurementSettingsItem(
         "R-to-R intervals (ms)",
-        SENSOR_SAMPLERATES_ONOFF,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
         config.sampleRates.bySensor.RtoR,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.RtoR = val;
@@ -228,7 +223,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* accel = createMeasurementSettingsItem(
         "Linear acceleration (m/s^2)",
-        SENSOR_SAMPLERATES_IMU,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_IMU),
         config.sampleRates.bySensor.Acc,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.Acc = val;
@@ -237,7 +232,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* gyro = createMeasurementSettingsItem(
         "Gyroscope (dps)",
-        SENSOR_SAMPLERATES_IMU,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_IMU),
         config.sampleRates.bySensor.Gyro,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.Gyro = val;
@@ -246,7 +241,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* magn = createMeasurementSettingsItem(
         "Magnetometer (μT)",
-        SENSOR_SAMPLERATES_IMU,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_IMU),
         config.sampleRates.bySensor.Magn,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.Magn = val;
@@ -255,7 +250,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* temp = createMeasurementSettingsItem(
         "Temperature (°C)",
-        SENSOR_SAMPLERATES_ONOFF,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
         config.sampleRates.bySensor.Temp,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.Temp = val;
@@ -264,7 +259,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* activity = createMeasurementSettingsItem(
         "Activity",
-        SENSOR_SAMPLERATES_ONOFF,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
         config.sampleRates.bySensor.Activity,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.Activity = val;
@@ -273,7 +268,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* tapDetection = createMeasurementSettingsItem(
         "Tap detection",
-        SENSOR_SAMPLERATES_ONOFF,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
         config.sampleRates.bySensor.TapDetection,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.TapDetection = val;
@@ -344,10 +339,10 @@ QWidget* MainWindow::createMeasurementSettingsItem(
         {
             int value = sampleRates[i];
 
-            if(value == SENSOR_OFF)
-                dropdown->addItem("Off", SENSOR_OFF);
-            else if (value == SENSOR_ON)
-                dropdown->addItem("On", SENSOR_ON);
+            if(value == SENSOR_SAMPLERATE_OFF)
+                dropdown->addItem("Off", SENSOR_SAMPLERATE_OFF);
+            else if (value == SENSOR_SAMPLERATE_ON)
+                dropdown->addItem("On", SENSOR_SAMPLERATE_ON);
             else
                 dropdown->addItem(QString::asprintf("%d Hz", value), value);
 
