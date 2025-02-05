@@ -2,6 +2,7 @@
 #include "protocol/packets/OfflineConfigPacket.hpp"
 #include "protocol/packets/OfflineStatusPacket.hpp"
 #include "protocol/packets/OfflineDataPacket.hpp"
+#include "protocol/packets/OfflineTimePacket.hpp"
 #include <QtLogging>
 
 const QBluetoothUuid Sensor::serviceUuid = QUuid("0000b001-0000-1000-8000-00805f9b34fb");
@@ -66,6 +67,13 @@ uint8_t Sensor::sendPacket(OfflinePacket& packet)
     return packet.reference;
 }
 
+uint8_t Sensor::syncTime()
+{
+    uint64_t timestamp_in_microseconds = time(0) * 1000000UL;
+    OfflineTimePacket packet(nextRef(), timestamp_in_microseconds);
+    return sendPacket(packet);
+}
+
 void Sensor::onDeviceConnected()
 {
     _pController->discoverServices();
@@ -121,6 +129,7 @@ void Sensor::onServiceStateChanged(QLowEnergyService::ServiceState state)
                 }
             }
         }
+        syncTime();
         sendCommand(OfflineCommandPacket::CmdReadConfig, {});
         break;
     }
