@@ -68,6 +68,7 @@ signals:
     void onError(Error err);
 
 private:
+    bool _timeSynced;
     QBluetoothDeviceInfo _info;
     QLowEnergyController* _pController;
     QLowEnergyService* _svc;

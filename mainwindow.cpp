@@ -266,14 +266,38 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
         });
     layout->addWidget(activity);
 
-    QWidget* tapDetection = createMeasurementSettingsItem(
-        "Tap detection",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
-        config.sampleRates.bySensor.TapDetection,
-        [this](uint16_t val) {
-            this->config.sampleRates.bySensor.TapDetection = val;
+    QWidget* tapDetection = createToggle(
+        "Record tap detection events",
+        !!(config.optionsFlags & OfflineConfig::OptionsLogTapGestures),
+        [this](bool enable) {
+            if(enable)
+                this->config.optionsFlags |= OfflineConfig::OptionsLogTapGestures;
+            else
+                this->config.optionsFlags &= ~OfflineConfig::OptionsLogTapGestures;
         });
     layout->addWidget(tapDetection);
+
+    QWidget* shakeDetection = createToggle(
+        "Record shake detection events",
+        !!(config.optionsFlags & OfflineConfig::OptionsLogShakeGestures),
+        [this](bool enable) {
+            if(enable)
+                this->config.optionsFlags |= OfflineConfig::OptionsLogShakeGestures;
+            else
+                this->config.optionsFlags &= ~OfflineConfig::OptionsLogShakeGestures;
+        });
+    layout->addWidget(shakeDetection);
+
+    QWidget* shakeToConnect = createToggle(
+        "Shake to turn on BLE (turn off after 30 seconds)",
+        !!(config.optionsFlags & OfflineConfig::OptionsShakeToConnect),
+        [this](bool enable) {
+            if(enable)
+                this->config.optionsFlags |= OfflineConfig::OptionsShakeToConnect;
+            else
+                this->config.optionsFlags &= ~OfflineConfig::OptionsShakeToConnect;
+        });
+    layout->addWidget(shakeToConnect);
 
     QWidget* dev = createDeviceSettingsItem();
     layout->addWidget(dev);
@@ -396,7 +420,6 @@ QWidget* MainWindow::createDeviceSettingsItem()
             { "Always on", OfflineConfig::WakeUpAlwaysOn },
             { "Connectors", OfflineConfig::WakeUpConnector },
             { "Movement", OfflineConfig::WakeUpMovement },
-            { "Single tap", OfflineConfig::WakeUpSingleTap },
             { "Double tap", OfflineConfig::WakeUpDoubleTap },
         };
 

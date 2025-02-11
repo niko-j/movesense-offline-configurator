@@ -11,6 +11,7 @@ const QBluetoothUuid Sensor::txUuid = QUuid("0000b003-0000-1000-8000-00805f9b34f
 
 Sensor::Sensor(QObject* parent, const QBluetoothDeviceInfo& info)
     : QObject { parent }
+    , _timeSynced(false)
     , _info(info)
     , _svc(nullptr)
 {
@@ -129,7 +130,6 @@ void Sensor::onServiceStateChanged(QLowEnergyService::ServiceState state)
                 }
             }
         }
-        syncTime();
         sendCommand(OfflineCommandPacket::CmdReadConfig, {});
         break;
     }
@@ -180,6 +180,13 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
             emit onError(Error::ReadFailure);
             return;
         }
+
+        if(!_timeSynced)
+        {
+            _timeSynced = true;
+            syncTime();
+        }
+
         emit onConfigUpdated(packet.config);
         break;
     }
