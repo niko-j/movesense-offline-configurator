@@ -12,7 +12,7 @@ This is a tool to configure Movesense sensor devices equipped with a custom offl
 
 ## Related Projects
 
-- [Movesense Offline Tracking](https://github.com/niko-j/movesense-offline-tracking) project contains the offline tracking firmware.
+- [Movesense Offline Firmware](https://github.com/niko-j/movesense-offline-firmware) project contains the offline tracking firmware.
 - [Movesense Offline SBEM Decoder](https://github.com/niko-j/movesense-offline-sbem-decoder) project contains a utility to read the log files and export measurements into CSV files.
 
 ## Compiling
