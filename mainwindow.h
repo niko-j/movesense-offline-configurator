@@ -42,11 +42,12 @@ private:
     void onScannerStateChanged(Scanner::State state);
 
 private:
-    QWidget* createMeasurementSettingsItem(
+    QWidget* createDropmenu(
         const QString& name,
         const QList<uint16_t>& sampleRates,
         uint16_t current,
-        std::function<void(uint16_t)> onValueChanged);
+        std::function<void(uint16_t)> onValueChanged,
+        std::function<QString(uint16_t)> labelFormatter);
 
     QWidget* createToggle(
         const QString& name,
