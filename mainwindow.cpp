@@ -281,7 +281,7 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
         config.sampleRates.bySensor.Temp,
         [this](uint16_t val) {
             this->config.sampleRates.bySensor.Temp = val;
-        }, labelFormatSampleRate);
+        }, labelFormatOnOff);
     layout->addWidget(temp);
 
     QWidget* activity = createDropmenu(
