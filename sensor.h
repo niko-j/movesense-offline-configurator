@@ -1,9 +1,7 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
-#include "protocol/OfflineConfig.hpp"
-#include "protocol/packets/OfflineCommandPacket.hpp"
-#include "protocol/packets/OfflineLogPacket.hpp"
+#include "protocol/Protocol.hpp"
 
 #include <QObject>
 #include <QBluetoothDeviceInfo>
@@ -25,9 +23,10 @@ public:
     void disconnectDevice();
 
     uint8_t sendConfig(const OfflineConfig& conf);
-    uint8_t sendCommand(OfflineCommandPacket::Command cmd, OfflineCommandPacket::CommandParams params);
-    uint8_t sendPacket(OfflinePacket& packet);
+    uint8_t sendCommand(CommandPacket::Command cmd, CommandPacket::CommandParams params);
+    uint8_t sendPacket(Packet& packet);
     uint8_t syncTime();
+    uint8_t handshake();
 
     std::vector<uint8_t> downloadData();
 
@@ -42,6 +41,7 @@ public:
     enum Error
     {
         UnsupportedDevice,
+        UnsupportedVersion,
         ControllerError,
         ReadFailure,
     };
@@ -61,7 +61,7 @@ private:
 signals:
     void onStateChanged(State state);
     void onConfigUpdated(const OfflineConfig& config);
-    void onLogListReceived(uint8_t ref, const QList<OfflineLogPacket::LogItem>& logs, bool complete);
+    void onLogListReceived(uint8_t ref, const QList<LogListPacket::LogItem>& logs, bool complete);
     void onDataTransmissionCompleted(uint8_t cmdRef, const QByteArray& data);
     void onDataTransmissionProgressUpdate(uint8_t ref, uint32_t received_bytes, uint32_t total_bytes);
     void onStatusResponse(uint8_t ref, uint16_t status);
@@ -69,6 +69,7 @@ signals:
 
 private:
     bool _timeSynced;
+    uint8_t _handshake;
     QBluetoothDeviceInfo _info;
     QLowEnergyController* _pController;
     QLowEnergyService* _svc;

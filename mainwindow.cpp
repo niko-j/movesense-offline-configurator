@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "protocol/OfflineConstants.hpp"
+#include "protocol/ProtocolConstants.hpp"
 
 #include <QtLogging>
 #include <QMessageBox>
@@ -212,10 +212,10 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* ecg = createDropmenu(
         "Single-lead ECG",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_ECG),
-        config.sampleRates.bySensor.ECG,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_SAMPLERATES_ECG),
+        config.measurementParams.bySensor.ECG,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.ECG = val;
+            this->config.measurementParams.bySensor.ECG = val;
         }, labelFormatSampleRate);
     layout->addWidget(ecg);
 
@@ -232,64 +232,64 @@ void MainWindow::onSensorConfigChanged(const OfflineConfig& config)
 
     QWidget* hr = createDropmenu(
         "Heart rate (average bpm)",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
-        config.sampleRates.bySensor.HeartRate,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_TOGGLE),
+        config.measurementParams.bySensor.HeartRate,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.HeartRate = val;
+            this->config.measurementParams.bySensor.HeartRate = val;
         }, labelFormatOnOff);
     layout->addWidget(hr);
 
     QWidget* rr = createDropmenu(
         "R-to-R intervals (ms)",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
-        config.sampleRates.bySensor.RtoR,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_TOGGLE),
+        config.measurementParams.bySensor.RtoR,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.RtoR = val;
+            this->config.measurementParams.bySensor.RtoR = val;
         }, labelFormatOnOff);
     layout->addWidget(rr);
 
     QWidget* accel = createDropmenu(
         "Linear acceleration (m/s^2)",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_IMU),
-        config.sampleRates.bySensor.Acc,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_SAMPLERATES_IMU),
+        config.measurementParams.bySensor.Acc,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.Acc = val;
+            this->config.measurementParams.bySensor.Acc = val;
         }, labelFormatSampleRate);
     layout->addWidget(accel);
 
     QWidget* gyro = createDropmenu(
         "Gyroscope (dps)",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_IMU),
-        config.sampleRates.bySensor.Gyro,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_SAMPLERATES_IMU),
+        config.measurementParams.bySensor.Gyro,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.Gyro = val;
+            this->config.measurementParams.bySensor.Gyro = val;
         }, labelFormatSampleRate);
     layout->addWidget(gyro);
 
     QWidget* magn = createDropmenu(
         "Magnetometer (μT)",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_IMU),
-        config.sampleRates.bySensor.Magn,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_SAMPLERATES_IMU),
+        config.measurementParams.bySensor.Magn,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.Magn = val;
+            this->config.measurementParams.bySensor.Magn = val;
         }, labelFormatSampleRate);
     layout->addWidget(magn);
 
     QWidget* temp = createDropmenu(
         "Temperature (°C)",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_SAMPLERATES_TOGGLE),
-        config.sampleRates.bySensor.Temp,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_TOGGLE),
+        config.measurementParams.bySensor.Temp,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.Temp = val;
+            this->config.measurementParams.bySensor.Temp = val;
         }, labelFormatOnOff);
     layout->addWidget(temp);
 
     QWidget* activity = createDropmenu(
         "Activity",
-        QList<uint16_t>::fromReadOnlyData(SENSOR_ACTIVITY_INTERVAL_PRESETS),
-        config.sampleRates.bySensor.Activity,
+        QList<uint16_t>::fromReadOnlyData(SENSOR_MEAS_PRESETS_ACTIVITY_INTERVALS),
+        config.measurementParams.bySensor.Activity,
         [this](uint16_t val) {
-            this->config.sampleRates.bySensor.Activity = val;
+            this->config.measurementParams.bySensor.Activity = val;
         }, labelFormatInterval);
     layout->addWidget(activity);
 

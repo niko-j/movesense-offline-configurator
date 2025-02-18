@@ -1,8 +1,4 @@
 #include "sensor.h"
-#include "protocol/packets/OfflineConfigPacket.hpp"
-#include "protocol/packets/OfflineStatusPacket.hpp"
-#include "protocol/packets/OfflineDataPacket.hpp"
-#include "protocol/packets/OfflineTimePacket.hpp"
 #include <QtLogging>
 
 const QBluetoothUuid Sensor::serviceUuid = QUuid("0000b001-0000-1000-8000-00805f9b34fb");
@@ -44,13 +40,13 @@ uint8_t Sensor::sendConfig(const OfflineConfig& config)
     return sendPacket(packet);
 }
 
-uint8_t Sensor::sendCommand(OfflineCommandPacket::Command cmd, OfflineCommandPacket::CommandParams params)
+uint8_t Sensor::sendCommand(CommandPacket::Command cmd, CommandPacket::CommandParams params)
 {
-    OfflineCommandPacket packet(nextRef(), cmd, params);
+    CommandPacket packet(nextRef(), cmd, params);
     return sendPacket(packet);
 }
 
-uint8_t Sensor::sendPacket(OfflinePacket& packet)
+uint8_t Sensor::sendPacket(Packet& packet)
 {
     if(!_chars.count(txUuid))
         return packet.INVALID_REF;
@@ -59,7 +55,7 @@ uint8_t Sensor::sendPacket(OfflinePacket& packet)
     if(!c.isValid())
         return packet.INVALID_REF;
 
-    QByteArray data(OfflinePacket::MAX_PACKET_SIZE, 0);
+    QByteArray data(Packet::MAX_PACKET_SIZE, 0);
     WritableBuffer stream((uint8_t*) data.data(), data.size());
     packet.Write(stream);
     data.resize(stream.get_write_pos());
@@ -71,7 +67,13 @@ uint8_t Sensor::sendPacket(OfflinePacket& packet)
 uint8_t Sensor::syncTime()
 {
     uint64_t timestamp_in_microseconds = time(0) * 1000000UL;
-    OfflineTimePacket packet(nextRef(), timestamp_in_microseconds);
+    TimePacket packet(nextRef(), timestamp_in_microseconds);
+    return sendPacket(packet);
+}
+
+uint8_t Sensor::handshake()
+{
+    HandshakePacket packet(nextRef());
     return sendPacket(packet);
 }
 
@@ -130,7 +132,8 @@ void Sensor::onServiceStateChanged(QLowEnergyService::ServiceState state)
                 }
             }
         }
-        sendCommand(OfflineCommandPacket::CmdReadConfig, {});
+        _handshake = handshake();
+        //sendCommand(CommandPacket::CmdReadConfig, {});
         break;
     }
     default:
@@ -144,12 +147,12 @@ void Sensor::onServiceStateChanged(QLowEnergyService::ServiceState state)
 void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QByteArray &value)
 {
     qInfo("Characteristic changed: %s", c.uuid().toString().toStdString().c_str());
-    OfflinePacket::Type type;
+    Packet::Type type;
     uint8_t ref;
     ReadableBuffer buffer((const uint8_t*) value.data(), value.size());
 
     bool valid = buffer.read(&type, 1) && buffer.read(&ref, 1) && buffer.seek_read(0);
-    if(!valid || ref == OfflinePacket::INVALID_REF)
+    if(!valid || ref == Packet::INVALID_REF)
     {
         qInfo("Received invalid packet");
         emit onError(Error::ReadFailure);
@@ -160,9 +163,22 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
 
     switch(type)
     {
-    case OfflinePacket::TypeStatus:
+    case Packet::TypeHandshake:
     {
-        OfflineStatusPacket packet(ref, 0);
+        HandshakePacket packet(ref);
+        if(!packet.Read(buffer))
+        {
+            emit onError(Error::ReadFailure);
+            return;
+        }
+
+        qInfo("Handshake - Protocol version %u.%u", packet.version_major, packet.version_minor);
+        sendCommand(CommandPacket::CmdReadConfig, {});
+        break;
+    }
+    case Packet::TypeStatus:
+    {
+        StatusPacket packet(ref, 0);
         if(!packet.Read(buffer))
         {
             emit onError(Error::ReadFailure);
@@ -172,7 +188,7 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
         emit onStatusResponse(packet.reference, packet.status);
         break;
     }
-    case OfflinePacket::TypeConfig:
+    case Packet::TypeOfflineConfig:
     {
         OfflineConfigPacket packet(ref);
         if(!packet.Read(buffer))
@@ -190,25 +206,25 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
         emit onConfigUpdated(packet.config);
         break;
     }
-    case OfflinePacket::TypeLogList:
+    case Packet::TypeLogList:
     {
-        OfflineLogPacket packet(ref);
+        LogListPacket packet(ref);
         if(!packet.Read(buffer))
         {
             emit onError(Error::ReadFailure);
             return;
         }
 
-        QList<OfflineLogPacket::LogItem> items;
+        QList<LogListPacket::LogItem> items;
         for(size_t i = 0; i < packet.count; i++)
             items.push_back(packet.items[i]);
 
         emit onLogListReceived(packet.reference, items, packet.complete);
         break;
     }
-    case OfflinePacket::TypeData:
+    case Packet::TypeData:
     {
-        OfflineDataPacket packet(ref);
+        DataPacket packet(ref);
         if(!packet.Read(buffer))
         {
             emit onError(Error::ReadFailure);
@@ -282,7 +298,7 @@ uint8_t Sensor::nextRef() const
 {
     static uint8_t ref = 0;
     ref++;
-    if(ref == OfflinePacket::INVALID_REF)
+    if(ref == Packet::INVALID_REF)
         ref++;
     return ref;
 }

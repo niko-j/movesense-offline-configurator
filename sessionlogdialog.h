@@ -27,7 +27,7 @@ private:
     void onLogSelected();
     void onClearList();
 
-    void onReceiveLogList(uint8_t ref, const QList<OfflineLogPacket::LogItem>& items, bool complete);
+    void onReceiveLogList(uint8_t ref, const QList<LogListPacket::LogItem>& items, bool complete);
     void onReceiveData(uint8_t ref, const QByteArray& data);
     void onReceiveDataProgress(uint8_t ref, uint32_t recvBytes, uint32_t totalBytes);
     void onReceiveStatusResponse(uint8_t ref, uint16_t status);
@@ -37,7 +37,7 @@ private:
 
     Ui::SessionLogDialog *ui;
     QSharedPointer<Sensor> sensor;
-    uint8_t pendingRequestRef = OfflinePacket::INVALID_REF;
+    uint8_t pendingRequestRef = Packet::INVALID_REF;
 };
 
 #endif // SESSIONLOGDIALOG_H

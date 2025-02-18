@@ -66,7 +66,7 @@ void SessionLogDialog::onEraseLogs()
     onClearList();
     if(this->sensor)
     {
-        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdClearLogs, {});
+        uint8_t ref = this->sensor->sendCommand(CommandPacket::CmdClearLogs, {});
         startRequest(ref);
     }
 }
@@ -76,7 +76,7 @@ void SessionLogDialog::onFetchSessions()
     onClearList();
     if(this->sensor)
     {
-        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdListLogs, {});
+        uint8_t ref = this->sensor->sendCommand(CommandPacket::CmdListLogs, {});
         startRequest(ref);
     }
 }
@@ -86,10 +86,10 @@ void SessionLogDialog::onDownloadSelected()
     auto index = ui->listWidget->currentIndex();
     if(this->sensor && index.isValid())
     {
-        OfflineCommandPacket::CommandParams params;
+        CommandPacket::CommandParams params;
         params.ReadLogParams.logIndex = (uint16_t) (index.row() + 1);
 
-        uint8_t ref = this->sensor->sendCommand(OfflineCommandPacket::CmdReadLog, params);
+        uint8_t ref = this->sensor->sendCommand(CommandPacket::CmdReadLog, params);
         startRequest(ref);
     }
 }
@@ -106,7 +106,7 @@ void SessionLogDialog::onClearList()
     ui->listWidget->clear();
 }
 
-void SessionLogDialog::onReceiveLogList(uint8_t ref, const QList<OfflineLogPacket::LogItem>& items, bool complete)
+void SessionLogDialog::onReceiveLogList(uint8_t ref, const QList<LogListPacket::LogItem>& items, bool complete)
 {
     for(const auto& item : items)
     {
@@ -169,7 +169,7 @@ void SessionLogDialog::completeRequest(uint8_t ref)
     if(pendingRequestRef != ref)
         return;
 
-    pendingRequestRef = OfflinePacket::INVALID_REF;
+    pendingRequestRef = Packet::INVALID_REF;
 
     ui->progressBar->setValue(100);
 

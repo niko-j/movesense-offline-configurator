@@ -1,0 +1,12 @@
+#pragma once
+#include <cstdint>
+
+constexpr uint8_t SENSOR_PROTOCOL_VERSION_MAJOR = 1;
+constexpr uint8_t SENSOR_PROTOCOL_VERSION_MINOR = 0;
+
+constexpr uint16_t SENSOR_MEAS_OFF = 0;
+constexpr uint16_t SENSOR_MEAS_ON = 1;
+constexpr uint16_t SENSOR_MEAS_SAMPLERATES_ECG[] = { SENSOR_MEAS_OFF, 125, 128, 200, 250, 256, 500, 512 };
+constexpr uint16_t SENSOR_MEAS_SAMPLERATES_IMU[] = { SENSOR_MEAS_OFF, 13, 26, 52, 104, 208, 416, 833, 1666 };
+constexpr uint16_t SENSOR_MEAS_TOGGLE[] = { SENSOR_MEAS_OFF, SENSOR_MEAS_ON };
+constexpr uint16_t SENSOR_MEAS_PRESETS_ACTIVITY_INTERVALS[] = { SENSOR_MEAS_OFF, 1, 30, 60, 300, 900, 1800, 3600 };
