@@ -15,6 +15,9 @@ void Scanner::start()
 {
     if(!_agent->isActive())
     {
+        _devices.clear();
+        emit deviceListUpdated(_devices);
+
         _agent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
         emit stateChanged(State::Scanning);
     }
