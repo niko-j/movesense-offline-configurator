@@ -14,6 +14,7 @@ public:
     virtual ~WritableBuffer();
 
     bool write(const void* src, size_t len);
+    bool pad(char c, size_t len);
     bool seek_write(size_t pos);
     uint8_t* get_write_ptr() const;
     size_t get_write_pos() const;

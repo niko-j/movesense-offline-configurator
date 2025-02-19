@@ -18,6 +18,15 @@ bool WritableBuffer::write(const void* src, size_t len)
     return true;
 }
 
+bool WritableBuffer::pad(char c, size_t len)
+{
+    if (len > m_write_size - m_write_pos)
+        return false;
+    memset(m_write_ptr + m_write_pos, c, len);
+    m_write_pos += len;
+    return true;
+}
+
 bool WritableBuffer::seek_write(size_t pos)
 {
     if (pos > m_write_size)

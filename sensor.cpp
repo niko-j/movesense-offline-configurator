@@ -1,9 +1,11 @@
 #include "sensor.h"
 #include <QtLogging>
 
-const QBluetoothUuid Sensor::serviceUuid = QUuid("0000b001-0000-1000-8000-00805f9b34fb");
-const QBluetoothUuid Sensor::rxUuid = QUuid("0000b002-0000-1000-8000-00805f9b34fb");
-const QBluetoothUuid Sensor::txUuid = QUuid("0000b003-0000-1000-8000-00805f9b34fb");
+const QBluetoothUuid Sensor::serviceUuid = QUuid::fromBytes(SENSOR_GATT_SERVICE_UUID, QSysInfo::LittleEndian);
+
+// Swapped TX <-> RX for clients
+const QBluetoothUuid Sensor::txUuid = QUuid::fromBytes(SENSOR_GATT_CHAR_RX_UUID, QSysInfo::LittleEndian);
+const QBluetoothUuid Sensor::rxUuid = QUuid::fromBytes(SENSOR_GATT_CHAR_TX_UUID, QSysInfo::LittleEndian);
 
 Sensor::Sensor(QObject* parent, const QBluetoothDeviceInfo& info)
     : QObject { parent }
