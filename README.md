@@ -17,8 +17,6 @@ This is a tool to configure Movesense sensor devices equipped with a custom offl
 
 ## Compiling
 
-Make sure you have the firmware repository cloned into the same directory as this project (the protocol directory is symbolically linked), or copy over the `src/protocol` from the firmware into the root of the repository.
-
 Either open the project in Qt Creator and build it or use CMake as in the following example.
 
 ```sh
