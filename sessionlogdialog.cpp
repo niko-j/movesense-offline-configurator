@@ -83,11 +83,13 @@ void SessionLogDialog::onFetchSessions()
 
 void SessionLogDialog::onDownloadSelected()
 {
-    auto index = ui->listWidget->currentIndex();
-    if(this->sensor && index.isValid())
+    auto item = ui->listWidget->currentItem();
+    if(this->sensor)
     {
+        auto itemData = item->data(Qt::UserRole);
+
         CommandPacket::CommandParams params;
-        params.ReadLogParams.logIndex = (uint16_t) (index.row() + 1);
+        params.ReadLogParams.logIndex = (uint16_t) (itemData.toUInt());
 
         uint8_t ref = this->sensor->sendCommand(CommandPacket::CmdReadLog, params);
         startRequest(ref);
@@ -113,7 +115,10 @@ void SessionLogDialog::onReceiveLogList(uint8_t ref, const QList<LogListPacket::
         qInfo("REF %u - Item: %u Size: %u Modified: %llu", ref, item.id, item.size, item.modified);
 
         QString label = QString::asprintf("LOG# %u - Modified: %llu - Size: %u", item.id, item.modified, item.size);
-        ui->listWidget->addItem(label);
+
+        QListWidgetItem* listItem = new QListWidgetItem(label);
+        listItem->setData(Qt::UserRole, item.id);
+        ui->listWidget->addItem(listItem);
     }
 
     if(complete)
@@ -123,18 +128,19 @@ void SessionLogDialog::onReceiveLogList(uint8_t ref, const QList<LogListPacket::
 void SessionLogDialog::onReceiveData(uint8_t ref, const QByteArray& data)
 {
     qInfo("Receiving data (ref: %u)", ref);
+    ui->progressBar->setValue(100);
 
     auto path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     QString filename = QFileDialog::getSaveFileName(this, "Save log", path, "SBEM File (*.sbem)");
-    if(filename.isEmpty())
-        return;
-
-    std::fstream file(filename.toStdString(), std::ios::trunc | std::ios::binary | std::ios::out);
-    if(!file.is_open())
-        return;
-
-    file.write(data.data(), data.size());
-    file.close();
+    if(!filename.isEmpty())
+    {
+        std::fstream file(filename.toStdString(), std::ios::trunc | std::ios::binary | std::ios::out);
+        if(file.is_open())
+        {
+            file.write(data.data(), data.size());
+            file.close();
+        }
+    }
 
     completeRequest(ref);
 }
@@ -170,8 +176,6 @@ void SessionLogDialog::completeRequest(uint8_t ref)
         return;
 
     pendingRequestRef = Packet::INVALID_REF;
-
-    ui->progressBar->setValue(100);
 
     onLogSelected();
     ui->refreshListButton->setEnabled(true);
