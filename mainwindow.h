@@ -7,6 +7,7 @@
 #include "scanner.h"
 #include "sensor.h"
 #include "sessionlogdialog.h"
+#include "logstreamview.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -33,8 +34,11 @@ private:
     void onOpenSessionLogs();
     void onCloseSessionLogs();
 
+    void onOpenDebugStream();
+    void onCloseDebugStream();
+
     void onSensorStateChanged(Sensor::State state);
-    void onSensorError(Sensor::Error error);
+    void onSensorError(Sensor::Error error, QString msg);
     void onSensorConfigChanged(const OfflineConfig& config);
     void onSensorStatus(uint8_t ref, uint16_t status);
 
@@ -62,5 +66,6 @@ private:
     OfflineConfig config;
 
     SessionLogDialog* sessionDialog;
+    LogStreamView* logStreamView;
 };
 #endif // MAINWINDOW_H

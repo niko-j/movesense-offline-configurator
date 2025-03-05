@@ -91,7 +91,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>328</width>
+             <width>401</width>
              <height>704</height>
             </rect>
            </property>
@@ -110,6 +110,13 @@
            <widget class="QPushButton" name="sessionLogsButton">
             <property name="text">
              <string>Logs</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="debugButton">
+            <property name="text">
+             <string>Debug Stream</string>
             </property>
            </widget>
           </item>

@@ -7,3 +7,4 @@
 #include "packets/OfflineConfigPacket.hpp"
 #include "packets/LogListPacket.hpp"
 #include "packets/TimePacket.hpp"
+#include "packets/DebugMessagePacket.hpp"

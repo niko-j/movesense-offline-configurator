@@ -41,6 +41,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         scanner.h scanner.cpp
         sessionlogdialog.h sessionlogdialog.cpp sessionlogdialog.ui
         protocol/packets/CommandPacket.cpp protocol/packets/CommandPacket.hpp protocol/packets/DataPacket.cpp protocol/packets/DataPacket.hpp protocol/packets/HandshakePacket.cpp protocol/packets/HandshakePacket.hpp protocol/packets/LogListPacket.cpp protocol/packets/LogListPacket.hpp protocol/packets/OfflineConfigPacket.cpp protocol/packets/OfflineConfigPacket.hpp protocol/packets/StatusPacket.cpp protocol/packets/StatusPacket.hpp protocol/packets/TimePacket.cpp protocol/packets/TimePacket.hpp protocol/types/OfflineConfig.hpp protocol/types/Packet.cpp protocol/types/Packet.hpp protocol/utils/Buffers.cpp protocol/utils/Buffers.hpp protocol/Protocol.hpp protocol/ProtocolConstants.hpp protocol/ProtocolPackets.hpp
+        protocol/packets/CommandPacket.cpp protocol/packets/CommandPacket.hpp protocol/packets/DataPacket.cpp protocol/packets/DataPacket.hpp protocol/packets/DebugMessagePacket.cpp protocol/packets/DebugMessagePacket.hpp protocol/packets/HandshakePacket.cpp protocol/packets/HandshakePacket.hpp protocol/packets/LogListPacket.cpp protocol/packets/LogListPacket.hpp protocol/packets/OfflineConfigPacket.cpp protocol/packets/OfflineConfigPacket.hpp protocol/packets/StatusPacket.cpp protocol/packets/StatusPacket.hpp protocol/packets/TimePacket.cpp protocol/packets/TimePacket.hpp protocol/types/OfflineConfig.hpp protocol/types/Packet.cpp protocol/types/Packet.hpp protocol/utils/Buffers.cpp protocol/utils/Buffers.hpp protocol/Protocol.hpp protocol/ProtocolConstants.hpp protocol/ProtocolPackets.hpp
+
+        logstreamview.h logstreamview.cpp logstreamview.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET movesense-offline-configurator APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

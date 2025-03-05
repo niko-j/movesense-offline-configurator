@@ -17,6 +17,10 @@ bool DataPacket::Read(ReadableBuffer& stream)
     bool result = Packet::Read(stream);
     result &= stream.read(&offset, sizeof(offset));
     result &= stream.read(&totalBytes, sizeof(totalBytes));
+
+    size_t len = stream.get_read_size() - stream.get_read_pos();
+    data = ReadableBuffer(stream.get_read_ptr() + stream.get_read_pos(), len);
+
     return result;
 };
 

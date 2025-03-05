@@ -1,6 +1,6 @@
 #include "CommandPacket.hpp"
 
-CommandPacket::CommandPacket(uint8_t ref, Command cmd, CommandParams args)
+CommandPacket::CommandPacket(uint8_t ref, Command cmd, Params args)
     : Packet(Packet::TypeCommand, ref)
     , command(cmd)
     , params(args)
@@ -21,8 +21,18 @@ bool CommandPacket::Read(ReadableBuffer& stream)
     case CmdReadLog:
     {
         result &= stream.read(
-            &params.ReadLogParams.logIndex,
-            sizeof(params.ReadLogParams.logIndex));
+            &params.readLog.logIndex,
+            sizeof(params.readLog.logIndex));
+        break;
+    }
+    case CmdStartDebugLogStream:
+    {
+        result &= stream.read(
+            &params.debugLog.logLevel, 
+            sizeof(params.debugLog.logLevel));
+        result &= stream.read(
+            &params.debugLog.sources,
+            sizeof(params.debugLog.sources));
         break;
     }
     default: break;
@@ -41,8 +51,18 @@ bool CommandPacket::Write(WritableBuffer& stream)
     case CmdReadLog:
     {
         result &= stream.write(
-            &params.ReadLogParams.logIndex,
-            sizeof(params.ReadLogParams.logIndex));
+            &params.readLog.logIndex,
+            sizeof(params.readLog.logIndex));
+        break;
+    }
+    case CmdStartDebugLogStream:
+    {
+        result &= stream.write(
+            &params.debugLog.logLevel, 
+            sizeof(params.debugLog.logLevel));
+        result &= stream.write(
+            &params.debugLog.sources,
+            sizeof(params.debugLog.sources));
         break;
     }
     default: break;

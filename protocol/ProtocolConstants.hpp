@@ -9,7 +9,7 @@ constexpr uint16_t SENSOR_GATT_CHAR_RX_UUID16 = 0x0002;
 constexpr uint16_t SENSOR_GATT_CHAR_TX_UUID16 = 0x0003;
 
 constexpr uint8_t SENSOR_PROTOCOL_VERSION_MAJOR = 1;
-constexpr uint8_t SENSOR_PROTOCOL_VERSION_MINOR = 0;
+constexpr uint8_t SENSOR_PROTOCOL_VERSION_MINOR = 1;
 
 constexpr uint16_t SENSOR_MEAS_OFF = 0;
 constexpr uint16_t SENSOR_MEAS_ON = 1;

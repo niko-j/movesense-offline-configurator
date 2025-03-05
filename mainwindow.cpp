@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , config({})
     , sessionDialog(new SessionLogDialog(this))
+    , logStreamView(new LogStreamView(this))
 {
     ui->setupUi(this);
 
@@ -26,8 +27,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->applyButton, &QPushButton::clicked, this, &MainWindow::onApplySettings);
     connect(ui->resetButton, &QPushButton::clicked, this, &MainWindow::onResetSettings);
     connect(ui->sessionLogsButton, &QPushButton::clicked, this, &MainWindow::onOpenSessionLogs);
+    connect(ui->debugButton, &QPushButton::clicked, this, &MainWindow::onOpenDebugStream);
 
     connect(sessionDialog, &QDialog::finished, this, &MainWindow::onCloseSessionLogs);
+    connect(logStreamView, &QDialog::finished, this, &MainWindow::onCloseDebugStream);
 
     // Connect device list actions
     connect(ui->deviceList, &QListWidget::itemSelectionChanged, this, &MainWindow::onSelectDevice);
@@ -40,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->resetButton->setEnabled(false);
     ui->applyButton->setEnabled(false);
     ui->sessionLogsButton->setEnabled(false);
+    ui->debugButton->setEnabled(false);
 
     connect(&scanner, &Scanner::deviceListUpdated, this, &MainWindow::onUpdateDeviceList);
     connect(&scanner, &Scanner::stateChanged, this, &MainWindow::onScannerStateChanged);
@@ -112,7 +116,6 @@ void MainWindow::onSettingsEdited()
 
 void MainWindow::onOpenSessionLogs()
 {
-    //this->hide();
     sessionDialog->show();
     sessionDialog->setSensorDevice(sensor);
 }
@@ -121,7 +124,18 @@ void MainWindow::onCloseSessionLogs()
 {
     sessionDialog->setSensorDevice(nullptr);
     sessionDialog->hide();
-    //this->show();
+}
+
+void MainWindow::onOpenDebugStream()
+{
+    logStreamView->show();
+    logStreamView->setSensorDevice(sensor);
+}
+
+void MainWindow::onCloseDebugStream()
+{
+    logStreamView->setSensorDevice(nullptr);
+    logStreamView->hide();
 }
 
 void MainWindow::onSensorStateChanged(Sensor::State state)
@@ -132,11 +146,13 @@ void MainWindow::onSensorStateChanged(Sensor::State state)
         {
             qInfo("Sensor disconnected!");
             onCloseSessionLogs();
+            onCloseDebugStream();
             sensor.reset();
 
             ui->resetButton->setEnabled(false);
             ui->applyButton->setEnabled(false);
             ui->sessionLogsButton->setEnabled(false);
+            ui->debugButton->setEnabled(false);
 
             ui->disconnectButton->hide();
             ui->connectButton->show();
@@ -163,15 +179,27 @@ void MainWindow::onSensorStateChanged(Sensor::State state)
         {
             qInfo("Sensor connected!");
             ui->sessionLogsButton->setEnabled(true);
+            ui->debugButton->setEnabled(true);
             break;
         }
     }
 }
 
-void MainWindow::onSensorError(Sensor::Error error)
+void MainWindow::onSensorError(Sensor::Error error, QString msg)
 {
-    QString msg = QString::asprintf("Sensor reported an error: %u", error);
-    QMessageBox::warning(this, "Sensor error", msg);
+    switch(error)
+    {
+    case Sensor::DeviceFault:
+    {
+        QString message = QString::asprintf("Sensor has encountered an error. Details:\n%s", msg.toStdString().c_str());
+        QMessageBox::warning(this, "Sensor error", message);
+        break;
+    }
+    default:
+        QString message = QString::asprintf("Sensor reported an error: %u", error);
+        QMessageBox::warning(this, "Sensor error", message);
+        break;
+    }
 }
 
 void MainWindow::onSensorConfigChanged(const OfflineConfig& config)

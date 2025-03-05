@@ -23,10 +23,13 @@ public:
     void disconnectDevice();
 
     uint8_t sendConfig(const OfflineConfig& conf);
-    uint8_t sendCommand(CommandPacket::Command cmd, CommandPacket::CommandParams params);
+    uint8_t sendCommand(CommandPacket::Command cmd, CommandPacket::Params params);
     uint8_t sendPacket(Packet& packet);
     uint8_t syncTime();
     uint8_t handshake();
+
+    void startStreamingLogMessages();
+    void stopStreamingLogMessages();
 
     std::vector<uint8_t> downloadData();
 
@@ -44,6 +47,7 @@ public:
         UnsupportedVersion,
         ControllerError,
         ReadFailure,
+        DeviceFault,
     };
 
 private:
@@ -65,11 +69,14 @@ signals:
     void onDataTransmissionCompleted(uint8_t cmdRef, const QByteArray& data);
     void onDataTransmissionProgressUpdate(uint8_t ref, uint32_t received_bytes, uint32_t total_bytes);
     void onStatusResponse(uint8_t ref, uint16_t status);
-    void onError(Error err);
+    void onError(Error err, QString msg = "");
+    void onReceiveLogStream(const DebugMessagePacket& msg);
 
 private:
     bool _timeSynced;
     uint8_t _handshake;
+    uint8_t _debugRequest;
+
     QBluetoothDeviceInfo _info;
     QLowEnergyController* _pController;
     QLowEnergyService* _svc;

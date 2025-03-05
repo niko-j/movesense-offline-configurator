@@ -88,8 +88,8 @@ void SessionLogDialog::onDownloadSelected()
     {
         auto itemData = item->data(Qt::UserRole);
 
-        CommandPacket::CommandParams params;
-        params.ReadLogParams.logIndex = (uint16_t) (itemData.toUInt());
+        CommandPacket::Params params;
+        params.readLog.logIndex = (uint16_t) (itemData.toUInt());
 
         uint8_t ref = this->sensor->sendCommand(CommandPacket::CmdReadLog, params);
         startRequest(ref);

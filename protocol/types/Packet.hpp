@@ -19,6 +19,7 @@ struct Packet
         TypeOfflineConfig = 0x04,
         TypeLogList = 0x05,
         TypeTime = 0x06,
+        TypeDebugMessage = 0x07,
     } type;
     uint8_t reference;
 

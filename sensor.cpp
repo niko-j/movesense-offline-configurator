@@ -10,6 +10,8 @@ const QBluetoothUuid Sensor::rxUuid = QUuid::fromBytes(SENSOR_GATT_CHAR_TX_UUID,
 Sensor::Sensor(QObject* parent, const QBluetoothDeviceInfo& info)
     : QObject { parent }
     , _timeSynced(false)
+    , _handshake(Packet::INVALID_REF)
+    , _debugRequest(Packet::INVALID_REF)
     , _info(info)
     , _svc(nullptr)
 {
@@ -42,7 +44,7 @@ uint8_t Sensor::sendConfig(const OfflineConfig& config)
     return sendPacket(packet);
 }
 
-uint8_t Sensor::sendCommand(CommandPacket::Command cmd, CommandPacket::CommandParams params)
+uint8_t Sensor::sendCommand(CommandPacket::Command cmd, CommandPacket::Params params)
 {
     CommandPacket packet(nextRef(), cmd, params);
     return sendPacket(packet);
@@ -77,6 +79,23 @@ uint8_t Sensor::handshake()
 {
     HandshakePacket packet(nextRef());
     return sendPacket(packet);
+}
+
+void Sensor::startStreamingLogMessages()
+{
+    CommandPacket::Params params = {
+        .debugLog = {
+            .logLevel = CommandPacket::Params::DebugLogParams::LogLevelInfo,
+            .sources = CommandPacket::Params::DebugLogParams::System |
+                       CommandPacket::Params::DebugLogParams::User
+        }
+    };
+    sendCommand(CommandPacket::CmdStartDebugLogStream, params);
+}
+
+void Sensor::stopStreamingLogMessages()
+{
+    sendCommand(CommandPacket::CmdStopDebugLogStream, {});
 }
 
 void Sensor::onDeviceConnected()
@@ -135,7 +154,6 @@ void Sensor::onServiceStateChanged(QLowEnergyService::ServiceState state)
             }
         }
         _handshake = handshake();
-        //sendCommand(CommandPacket::CmdReadConfig, {});
         break;
     }
     default:
@@ -175,7 +193,12 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
         }
 
         qInfo("Handshake - Protocol version %u.%u", packet.version_major, packet.version_minor);
-        sendCommand(CommandPacket::CmdReadConfig, {});
+
+        if(packet.version_major == 1 && packet.version_minor >= 1)
+            _debugRequest = sendCommand(CommandPacket::CmdDebugLastFault, {});
+        else
+            sendCommand(CommandPacket::CmdReadConfig, {});
+
         break;
     }
     case Packet::TypeStatus:
@@ -186,6 +209,15 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
             emit onError(Error::ReadFailure);
             return;
         }
+
+        if(ref == _debugRequest)
+        {
+            if(packet.status == 204)
+                qInfo("No device faults detected");
+
+            sendCommand(CommandPacket::CmdReadConfig, {});
+        }
+
         qInfo("Received status %u for request %u", packet.status, ref);
         emit onStatusResponse(packet.reference, packet.status);
         break;
@@ -225,7 +257,7 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
         break;
     }
     case Packet::TypeData:
-    {
+    {   
         DataPacket packet(ref);
         if(!packet.Read(buffer))
         {
@@ -233,9 +265,17 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
             return;
         }
 
-        size_t len = buffer.get_read_size() - buffer.get_read_pos();
-        QByteArray payload(len, 0);
-        buffer.read(payload.data(), len);
+        size_t len = packet.data.get_read_size();
+        auto data = packet.data.get_read_ptr();
+        QByteArray payload((const char*) data, len);
+
+        if(ref == _debugRequest)
+        {
+            std::string debugData = payload.toStdString();
+            emit onError(Error::DeviceFault, QString::fromStdString(debugData));
+            sendCommand(CommandPacket::CmdReadConfig, {});
+            return;
+        }
 
         if(!_buffers.contains(ref))
         {
@@ -265,6 +305,17 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
             emit onDataTransmissionProgressUpdate(ref, buf.received_bytes, packet.totalBytes);
         }
 
+        break;
+    }
+    case Packet::TypeDebugMessage:
+    {
+        DebugMessagePacket packet(ref);
+        if(!packet.Read(buffer))
+        {
+            emit onError(Error::ReadFailure);
+            return;
+        }
+        emit onReceiveLogStream(packet);
         break;
     }
     default:
