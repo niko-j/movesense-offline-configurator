@@ -7,6 +7,8 @@ const QBluetoothUuid Sensor::serviceUuid = QUuid::fromBytes(SENSOR_GATT_SERVICE_
 const QBluetoothUuid Sensor::txUuid = QUuid::fromBytes(SENSOR_GATT_CHAR_RX_UUID, QSysInfo::LittleEndian);
 const QBluetoothUuid Sensor::rxUuid = QUuid::fromBytes(SENSOR_GATT_CHAR_TX_UUID, QSysInfo::LittleEndian);
 
+constexpr uint8_t DEBUG_LOG_STREAM_REF = 10;
+
 Sensor::Sensor(QObject* parent, const QBluetoothDeviceInfo& info)
     : QObject { parent }
     , _timeSynced(false)
@@ -90,7 +92,10 @@ void Sensor::startStreamingLogMessages()
                        CommandPacket::Params::DebugLogParams::User
         }
     };
-    sendCommand(CommandPacket::CmdStartDebugLogStream, params);
+
+    // Use fixed packet reference to avoid conflicts with other packets
+    CommandPacket packet(DEBUG_LOG_STREAM_REF, CommandPacket::CmdStartDebugLogStream, params);
+    sendPacket(packet);
 }
 
 void Sensor::stopStreamingLogMessages()
@@ -349,9 +354,12 @@ void Sensor::onFinishServiceDiscovery()
 
 uint8_t Sensor::nextRef() const
 {
-    static uint8_t ref = 0;
-    ref++;
-    if(ref == Packet::INVALID_REF)
-        ref++;
+    const uint8_t begin = 100;
+    const uint8_t end = 200;
+    static uint8_t ref = begin;
+    if(ref + 1 == end)
+        ref = begin;
+    else
+        ref += 1;
     return ref;
 }
