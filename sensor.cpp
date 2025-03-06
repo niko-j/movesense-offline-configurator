@@ -215,14 +215,6 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
             return;
         }
 
-        if(ref == _debugRequest)
-        {
-            if(packet.status == 204)
-                qInfo("No device faults detected");
-
-            sendCommand(CommandPacket::CmdReadConfig, {});
-        }
-
         qInfo("Received status %u for request %u", packet.status, ref);
         emit onStatusResponse(packet.reference, packet.status);
         break;
@@ -276,8 +268,17 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
 
         if(ref == _debugRequest)
         {
-            std::string debugData = payload.toStdString();
-            emit onError(Error::DeviceFault, QString::fromStdString(debugData));
+            if(payload.size() >= sizeof(uint64_t))
+            {
+                uint64_t lastReset = *reinterpret_cast<const uint64_t*>(payload.data());
+
+                if(lastReset > 0)
+                {
+                    payload.erase(payload.constBegin(), payload.constBegin() + sizeof(lastReset));
+                    std::string reason = std::string(payload.data(), payload.size());
+                    qInfo("Last reset reason: %s", reason.c_str());
+                }
+            }
             sendCommand(CommandPacket::CmdReadConfig, {});
             return;
         }
