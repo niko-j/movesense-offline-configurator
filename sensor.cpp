@@ -274,9 +274,19 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
 
                 if(lastReset > 0)
                 {
+                    qInfo("Debug info:");
                     payload.erase(payload.constBegin(), payload.constBegin() + sizeof(lastReset));
-                    std::string reason = std::string(payload.data(), payload.size());
-                    qInfo("Last reset reason: %s", reason.c_str());
+                    for(size_t i = 0; i < payload.size(); i++)
+                    {
+                        if(payload[i] != '\0')
+                        {
+                            size_t len = strnlen(payload.data() + i, payload.size() - i);
+                            std::string line = std::string(payload.data() + i, len);
+                            if(!line.empty())
+                                qInfo("\t%s", line.c_str());
+                            i += len;
+                        }
+                    }
                 }
             }
             sendCommand(CommandPacket::CmdReadConfig, {});
