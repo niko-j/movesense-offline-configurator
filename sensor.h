@@ -81,13 +81,7 @@ private:
     QLowEnergyController* _pController;
     QLowEnergyService* _svc;
     QMap<QUuid, QLowEnergyCharacteristic> _chars;
-
-    struct DataTransmission
-    {
-        size_t received_bytes = 0;
-        QByteArray bytes;
-    };
-    QMap<uint8_t, DataTransmission> _buffers;
+    QMap<uint8_t, QByteArray> _buffers;
 };
 
 #endif // SENSOR_H

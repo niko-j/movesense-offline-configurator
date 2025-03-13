@@ -216,6 +216,17 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
         }
 
         qInfo("Received status %u for request %u", packet.status, ref);
+
+        if(_buffers.contains(ref))
+        {
+            if(packet.status == 200)
+            {
+                emit onDataTransmissionCompleted(ref, _buffers[ref]);
+            }
+
+            _buffers.remove(ref);
+        }
+
         emit onStatusResponse(packet.reference, packet.status);
         break;
     }
@@ -295,32 +306,12 @@ void Sensor::onCharacteristicChanged(const QLowEnergyCharacteristic& c, const QB
 
         if(!_buffers.contains(ref))
         {
-            _buffers[ref] = DataTransmission {
-                .received_bytes = 0,
-                .bytes = QByteArray(packet.totalBytes, 0)
-            };
+            _buffers[ref] = QByteArray();
         }
 
         auto& buf = _buffers[ref];
-
-        if(packet.offset + len > buf.bytes.size()) {
-            qWarning("Corrupted data packet");
-            return;
-        }
-
-        memcpy(buf.bytes.data() + packet.offset, payload.data(), len);
-        buf.received_bytes += len;
-
-        if(buf.received_bytes == packet.totalBytes)
-        {
-            emit onDataTransmissionCompleted(ref, buf.bytes);
-            _buffers.remove(ref);
-        }
-        else
-        {
-            emit onDataTransmissionProgressUpdate(ref, buf.received_bytes, packet.totalBytes);
-        }
-
+        buf.append(payload);
+        emit onDataTransmissionProgressUpdate(ref, buf.size(), packet.totalBytes);
         break;
     }
     case Packet::TypeDebugMessage:
